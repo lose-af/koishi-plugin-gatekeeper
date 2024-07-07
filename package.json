@@ -1,6 +1,7 @@
 {
-  "name": "@losenone/koishi-plugin-ticket",
-  "description": "加群凭证 Koishi 插件",
+  "name": "@losenone/koishi-plugin-gatekeeper",
+  "description": "洛书南审核 Koishi 插件",
+  "private": true,
   "version": "0.0.1",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
@@ -9,14 +10,15 @@
     "dist"
   ],
   "license": "MIT",
-  "scripts": {},
   "keywords": [
     "chatbot",
     "koishi",
     "plugin"
   ],
-  "devDependencies": {},
   "peerDependencies": {
     "koishi": "^4.17.6"
+  },
+  "dependencies": {
+    "@paralleldrive/cuid2": "^2.2.2"
   }
 }

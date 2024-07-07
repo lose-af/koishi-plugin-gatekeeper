@@ -12,6 +12,7 @@ export function registerEventHandlers(ctx: Context) {
 
     const records = await db.fetchUserRecords(
       ctx,
+      (ctx.config as Config).identifier,
       `${session.platform}:${session.userId}`
     );
 

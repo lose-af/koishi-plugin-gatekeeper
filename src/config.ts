@@ -1,6 +1,7 @@
 import { Schema } from "koishi";
 
 export interface Config {
+  identifier: string;
   platform: string;
   genTicketIn: string;
   useTicketIn: string;
@@ -18,6 +19,7 @@ export interface Config {
 }
 
 export const Config: Schema<Config> = Schema.object({
+  identifier: Schema.string().required(true),
   platform: Schema.string().required(true).default("onebot"),
   genTicketIn: Schema.string().required(true),
   useTicketIn: Schema.string().required(true),

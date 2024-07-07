@@ -195,6 +195,11 @@ export function apply(ctx: Context) {
     });
 
     if (records.length <= 0) {
+      ctx.logger.info(
+        `Rejecting user ${session.userId} joining guild ${
+          (ctx.config as Config).useTicketIn
+        } in platform ${session.platform} as they do not have records`
+      );
       session.bot.handleGuildMemberRequest(
         session.messageId,
         false,
@@ -212,12 +217,24 @@ export function apply(ctx: Context) {
     if (!someRecord.accepted) {
       // In deny cooldown
       if (now.getTime() < someRecord.expire_at.getTime()) {
+        ctx.logger.info(
+          `Rejecting user ${session.userId} joining guild ${
+            (ctx.config as Config).useTicketIn
+          } in platform ${
+            session.platform
+          } as they are in the deny cooldown preiod`
+        );
         session.bot.handleGuildMemberRequest(
           session.messageId,
           false,
           (ctx.config as Config).message.inDenyCooldown
         );
       } else {
+        ctx.logger.info(
+          `Rejecting user ${session.userId} joining guild ${
+            (ctx.config as Config).useTicketIn
+          } in platform ${session.platform} and invalidating their deny records`
+        );
         // After deny cooldown
         session.bot.handleGuildMemberRequest(
           session.messageId,
@@ -239,6 +256,11 @@ export function apply(ctx: Context) {
 
     // Accepted but expired ticket
     if (now.getTime() > someRecord.expire_at.getTime()) {
+      ctx.logger.info(
+        `Rejecting user ${session.userId} joining guild ${
+          (ctx.config as Config).useTicketIn
+        } in platform ${session.platform} as they provided expired ticket`
+      );
       session.bot.handleGuildMemberRequest(
         session.messageId,
         false,
@@ -249,6 +271,11 @@ export function apply(ctx: Context) {
 
     // Accepted but incorrect ticket
     if (!session.content.includes(someRecord.ticket)) {
+      ctx.logger.info(
+        `Rejecting user ${session.userId} joining guild ${
+          (ctx.config as Config).useTicketIn
+        } in platform ${session.platform} as they provided incorrect ticket`
+      );
       session.bot.handleGuildMemberRequest(
         session.messageId,
         false,
@@ -259,6 +286,11 @@ export function apply(ctx: Context) {
 
     // Finally the ticket is valid
     session.bot.handleGuildMemberRequest(session.messageId, true);
+    ctx.logger.info(
+      `Accepting user ${session.userId} joining guild ${
+        (ctx.config as Config).useTicketIn
+      } in platform ${session.platform}`
+    );
     await ctx.database.set(
       DATABASE_TABLE,
       records.map((record) => record.id),
@@ -269,6 +301,13 @@ export function apply(ctx: Context) {
 
     // Remove from genTicket guild
     if ((ctx.config as Config).removeAfterAccepted) {
+      ctx.logger.info(
+        `Removing user ${session.userId} from guild ${
+          (ctx.config as Config).genTicketIn
+        } in platform ${session.platform} as they used the ticket in ${
+          (ctx.config as Config).useTicketIn
+        }`
+      );
       await session.bot.kickGuildMember(
         // Use guildId only
         (ctx.config as Config).genTicketIn,

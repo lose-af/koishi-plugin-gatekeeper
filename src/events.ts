@@ -6,7 +6,7 @@ export function registerEventHandlers(ctx: Context) {
   ctx.on("guild-member-request", async (session) => {
     if (
       session.platform !== (ctx.config as Config).platform ||
-      session.guildId !== (ctx.config as Config).genTicketIn
+      session.guildId !== (ctx.config as Config).useTicketIn
     )
       return;
 
@@ -109,34 +109,55 @@ export function registerEventHandlers(ctx: Context) {
     }
 
     // Finally the ticket is valid
-    session.bot.handleGuildMemberRequest(session.messageId, true);
     ctx.logger.info(
       `Accepting user ${session.userId} joining guild ${
         (ctx.config as Config).useTicketIn
       } in platform ${session.platform}`
     );
+    session.bot
+      .handleGuildMemberRequest(session.messageId, true)
+      .then(() => {
+        db.updateUserRecords(
+          ctx,
+          records.map((record) => record.id),
+          { invalidated: true }
+        );
+      })
+      .then(async () => {
+        // Remove from genTicket guild
+        if ((ctx.config as Config).removeAfterAccepted) {
+          const member = await session.bot.getGuildMember(
+            (ctx.config as Config).useTicketIn,
+            session.userId
+          );
 
-    await db.updateUserRecords(
-      ctx,
-      records.map((record) => record.id),
-      { invalidated: true }
-    );
+          // Ensure the user is actually joined the guild
+          if (member && member.user.id === session.userId) {
+            ctx.logger.info(
+              `Trying to kick user ${session.userId} from guild ${
+                (ctx.config as Config).genTicketIn
+              } in platform ${session.platform} as they joined guild ${
+                (ctx.config as Config).useTicketIn
+              }`
+            );
 
-    // Remove from genTicket guild
-    if ((ctx.config as Config).removeAfterAccepted) {
-      ctx.logger.info(
-        `Removing user ${session.userId} from guild ${
-          (ctx.config as Config).genTicketIn
-        } in platform ${session.platform} as they used the ticket in ${
-          (ctx.config as Config).useTicketIn
-        }`
-      );
-
-      await session.bot.kickGuildMember(
-        (ctx.config as Config).genTicketIn,
-        session.userId,
-        false
-      );
-    }
+            session.bot.kickGuildMember(
+              (ctx.config as Config).genTicketIn,
+              session.userId,
+              false
+            );
+          } else {
+            ctx.logger.warn(
+              `Not kicking user ${session.userId} from guild ${
+                (ctx.config as Config).genTicketIn
+              } in platform ${
+                session.platform
+              } because they have not joined guild ${
+                (ctx.config as Config).useTicketIn
+              }`
+            );
+          }
+        }
+      });
   });
 }

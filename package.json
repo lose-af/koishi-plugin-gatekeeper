@@ -1,7 +1,11 @@
 {
   "name": "@losenone/koishi-plugin-gatekeeper",
   "description": "洛书南审核 Koishi 插件",
-  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lose-af/koishi-plugin-gatekeeper.git"
+  },
+  "private": "true",
   "version": "0.0.1",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",

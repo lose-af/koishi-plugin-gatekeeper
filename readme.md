@@ -1,5 +1,5 @@
-# @losenone/koishi-plugin-ticket
+# @losenone/koishi-plugin-gatekeeper
 
-[![npm](https://img.shields.io/npm/v/@losenone/koishi-plugin-ticket?style=flat-square)](https://www.npmjs.com/package/@losenone/koishi-plugin-ticket)
+洛书南审核 Koishi 插件
 
-加群凭证 Koishi 插件
+本插件不在 npm 上发布

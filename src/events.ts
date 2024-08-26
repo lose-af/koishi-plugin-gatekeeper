@@ -125,14 +125,14 @@ export function registerEventHandlers(ctx: Context) {
       })
       .then(async () => {
         // Remove from genTicket guild
-        if ((ctx.config as Config).removeAfterAccepted) {
-          const member = await session.bot.getGuildMember(
-            (ctx.config as Config).useTicketIn,
-            session.userId
-          );
+        const member = await session.bot.getGuildMember(
+          (ctx.config as Config).useTicketIn,
+          session.userId
+        );
 
-          // Ensure the user is actually joined the guild
-          if (member && member.user.id === session.userId) {
+        // Ensure the user is actually joined the guild
+        if (member && member.user.id === session.userId) {
+          if ((ctx.config as Config).removeAfterAccepted) {
             ctx.logger.info(
               `Trying to kick user ${session.userId} from guild ${
                 (ctx.config as Config).genTicketIn
@@ -146,18 +146,35 @@ export function registerEventHandlers(ctx: Context) {
               session.userId,
               false
             );
-          } else {
-            ctx.logger.warn(
-              `Not kicking user ${session.userId} from guild ${
-                (ctx.config as Config).genTicketIn
-              } in platform ${
-                session.platform
-              } because they have not joined guild ${
-                (ctx.config as Config).useTicketIn
-              }`
-            );
           }
+        } else {
+          ctx.logger.warn(
+            `User ${session.userId} from guild ${
+              (ctx.config as Config).genTicketIn
+            } in platform ${session.platform} failed to join guild ${
+              (ctx.config as Config).useTicketIn
+            }, sending notifications.`
+          );
+
+          // Warn moderators about the failure (member have not joined successfully).
+          await session.bot.sendMessage(
+            (ctx.config as Config).genTicketIn,
+            (ctx.config as Config).message.joinFailed.replaceAll(
+              "{user}",
+              session.userId
+            )
+          );
         }
+      })
+      .catch(async (error) => {
+        if (error instanceof Error) {
+          await session.bot.sendMessage(
+            (ctx.config as Config).genTicketIn,
+            "Error: " + error.message
+          );
+          return;
+        }
+        throw error;
       });
   });
 }

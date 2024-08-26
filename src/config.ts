@@ -15,6 +15,7 @@ export interface Config {
     noRecord: string;
     invalidTicket: string;
     expiredTicket: string;
+    joinFailed: string;
   };
 }
 
@@ -33,5 +34,8 @@ export const Config: Schema<Config> = Schema.object({
     noRecord: Schema.string().default("进入社区前请先加入审核群。"),
     invalidTicket: Schema.string().default("请正确输入入群凭证。"),
     expiredTicket: Schema.string().default("请联系审核群管理员再次发放凭证。"),
+    joinFailed: Schema.string().default(
+      "成员 {user} 未能成功入群，请管理员检查后重新发放凭证。"
+    ),
   }),
 });
